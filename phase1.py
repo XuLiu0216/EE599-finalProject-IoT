@@ -9,13 +9,17 @@ class UserEntity:
     def __init__(self, id, currLoc, destination, preference, budget, carModel, date, startTime, endTime):
         self.id = id
         self.currLoc = currLoc
+        #pref = 0 means prefer mincost, pref = 1 means prefer min distance
         self.pref = preference
+        #user`s budget for parking
         self.budget = budget
         self.destLoc = destination
         self.carModel = carModel
         self.date = date
         self.startTime = startTime
         self.endTime = endTime
+        #the parking choice list for this user
+        self.plist = []
 
 class ParkingEntities:
     def __init__(self, id, loc, charge, maxTime, workday, startTime, endTime, numCompact, numRegular):
@@ -28,6 +32,8 @@ class ParkingEntities:
         self.endTime = endTime
         self.numCompact = numCompact
         self.numRegular = numRegular
+        #the user list who would choose this parking structure as an optimal choic
+        self.uList = []
 
 class interaction:
 
@@ -44,27 +50,10 @@ class interaction:
         dis = math.sqrt((self.parking.loc.x - self.user.destLoc.x) ** 2 + (self.parking.loc.y - self.user.destLoc.y) ** 2)
         return dis
 
-    def check_valid(self):
-        model = self.user.carModel
-        if(model =='S' and (self.parking.numCompact + self.parking.numRegular) <= 0):
-            print "1"
-            return False
-        elif(model == 'R' and self.parking.numRegular <= 0):
-            print"2"
-            return False
-        else:
-            weekday = datetime.strptime(self.user.date, "%Y%m%d").weekday()
-            if(self.parking.workday[weekday] == '1'):
-                print self.user.startTime
-                if(self.user.startTime >= self.parking.startTime and self.user.endTime <= self.parking.endTime and self.user.endTime - self.user.startTime < self.parking.maxTime):
-                    return True
-            print"3"
-            return False
-
     def cost(self):
         #0215 means 2$/hour max 15$/day, assume total cost less than 100$
-        hourCharge = self.parking.charge[0]*10 + self.parking.charge[1]
-        dayCharge = self.parking.charge[2]*10 + self.parking.charge[3]
+        hourCharge = int(self.parking.charge[0])*10 + int(self.parking.charge[1])
+        dayCharge = int(self.parking.charge[2])*10 + int(self.parking.charge[3])
         if(hourCharge == 0):
             return dayCharge
         elif(dayCharge == 0):
@@ -74,7 +63,42 @@ class interaction:
                 return dayCharge
             else:
                 return hourCharge * (self.user.endTime - self.user.startTime)
+    #check if there is avaliable parking spots in self parking
+    def check_avaliable(self):
+        #model only includes'S' and 'R', S means small, R means regular.
+        #compact paking spaces only for small cars, and regular paking spots serve for small and regular cars both
+        model = self.user.carModel
+        if(model =='S' and (self.parking.numCompact + self.parking.numRegular) <= 0):
+            return False
+        elif(model == 'R' and self.parking.numRegular <= 0):
+            return False
+        else:
+            weekday = datetime.strptime(self.user.date, "%Y%m%d").weekday()
+            if(self.parking.workday[weekday] == '1'):
+                if(self.user.startTime >= self.parking.startTime and self.user.endTime <= self.parking.endTime and self.user.endTime - self.user.startTime < self.parking.maxTime):
+                    return True
+            return False
 
+    #final check : if the avaliable parking spot suit for user`s preference
+    def check(self):
+        if(self.check_avaliable()):
+            if(self.user.pref == 0):
+                print self.cost()
+                if(self.cost() <= self.user.budget):
+                    return True
+            else:
+                #assume we only choose the parking less than 1000 meters
+                if(self.walk_distance() <= 10000):
+                    return True
+        return False
+
+
+
+    def __lt__(self, other):
+        if self.walk_distance() < other.walk_distance():
+            return True;
+        else:
+            return False;
 
 def read_input():
     filename = 'userInput.txt'
@@ -115,21 +139,25 @@ def read_input():
             end = int(line[27:29])
             numCompact = int(line[29:33])
             numRegular = int(line[33:37])
-            print numRegular
             line = f.readline()
             parking = ParkingEntities(id, parkingLoc, charge, maxtime, workday, start, end, numCompact, numRegular)
             parkings.append(parking)
     f.close()
     return users, parkings
 
+
 U,P = read_input()
-I = []
-for p in P:
-    i = interaction(U[0], p)
-    I.append(i)
-
-def inter_cmp(i1, i2):
-    return int(i1.walk_distance() - i2.walk_distance())
-
-I.sort(cmp = inter_cmp)
-print I[0].walk_distance(),I[1].walk_distance(),I[2].walk_distance(),I[3].walk_distance(),
+#UI is the list of list of interactions for each user
+UI = []
+for u in U:
+    #I is the list of interactions for this user u
+    I = []
+    for p in P:
+        i = interaction(u, p)
+        if(i.check()):
+            I.append(i)
+    if(I[0].user.pref == 0):
+        I.sort(key = lambda interaction: interaction.cost())
+    else:
+        I.sort(key = lambda interaction: interaction.walk_distance())
+    UI.append(I)
