@@ -32,7 +32,7 @@ class ParkingEntities:
         self.endTime = endTime
         self.numCompact = numCompact
         self.numRegular = numRegular
-        #the user list who would choose this parking structure as an optimal choic
+        #the user list who would choose this parking structure as an optimal choice
         self.uList = []
 
 class interaction:
