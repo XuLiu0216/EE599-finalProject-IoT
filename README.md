@@ -10,7 +10,7 @@ Must have python 2.
 
 ### Getting Started
 
-Edit the input.txt file, with format given by the attached jpeg.
+Edit the parkingInput.txt and userInput.txt file, with format given by the attached jpeg.
 
 Run the program by entering 'python phase1.py' into terminal.
 
