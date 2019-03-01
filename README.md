@@ -12,7 +12,7 @@ Must have python 2.
 
 Edit the input.txt file, with format given by the attached jpeg.
 
-Run the program by entering 'python python.py' into terminal.
+Run the program by entering 'python phase1.py' into terminal.
 
 ## Versioning
 
