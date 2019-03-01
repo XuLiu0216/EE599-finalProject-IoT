@@ -137,7 +137,6 @@ def allocate(U, P):
         tempList.append(temp)
     tempList.sort(key=lambda interaction: interaction.walk_distance())
     for t in tempList:
-        print "sss", t.parking.id,t.walk_distance()
         pRank.append(t.parking.id)
 
     for m in range(len(U)):
@@ -167,8 +166,6 @@ def recursiveFunction(U, P, pRank, M, R):
         return
     id = pRank[0]
     #no conflict:
-    print pRank, P
-    print P[id].count, "count"
     #if there is enough parking spots here
     if P[id].count <= P[id].numSpot:
         for key in U.keys():
