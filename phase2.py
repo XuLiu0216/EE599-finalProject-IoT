@@ -194,6 +194,58 @@ def recursiveFunction(U, P, pRank, M, R):
     del(pRank[0])
     return recursiveFunction(U, P, pRank, M, R)
 
+def bruteforce(u):
+    destination = u.destLoc
+    P = search(destination,1)
+    cur = u.currLoc
+    size = len(P)
+    min_value = sys.maxint
+    min_id = 0
+    for i in range size:
+        t1 = get_time(cur,P[i],1)
+        t2 = get_time(P[i],destination,2)
+        t = t1+t2
+        if t < min_value:
+            min_value = t
+            min_id = i
+    return P[min_id]
+def search(des,mile):
+    res = {}
+    j = 0
+    for i in len(P):
+        it = interaction(des,P[i].loc)
+        if it.distance_user_parking() <= mile:
+            res[j] = P[i]
+            j = j+1
+    return res
+def greedy(u):
+    destination = u.destLoc
+    P = search(destination,1)
+    des = u.destLoc
+    size = len(P)
+    min_value1 = sys.maxint
+    min_value2 = sys.maxint
+    min_id1 = {}
+    min_id2 = {}
+    res = {}
+    j = 0
+    for i in range (size):
+        t1 = get_time(cur,P[i].loc)
+        if t1 < min_value1:
+            min_value1 = t1
+            min_id1[j] = i
+            j = j+1
+    size = len(min_id1)
+    j = 0
+    for i in range (size):
+        t2 = get_time(P[min_id1[i]].loc,des)
+        if t2 < min_value2:
+            min_value2 = t2
+            min_id2[j] = i
+            j = j + 1
+    for i in range (len(min_id2)):
+        res[i] = P[min_id2[i]]
+    return res
 U,P = read_input()
 allocate(U,P)
 
