@@ -127,6 +127,7 @@ def read_input():
 
 #the process to allocate parking to users
 def allocate(U, P):
+    numUsers = len(U)#Added to store number of users
     u1 = U[1]
     tempList = []
     M = [[0 for col in range(len(P))] for row in range(len(U))]
@@ -153,7 +154,11 @@ def allocate(U, P):
                 Res[u.id - 1][p.id - 1] = 0
 
     recursiveFunction(U, P, pRank, M , Res)
-    print Res
+    #print Res
+    #Print out which users go to which parking structures
+    for i in range(0,numUsers):
+        print "UserID:",i+1 , "Parks in","Parking ID:", Res[i].index(1) +1
+    
     return
 
 #The recursive function to solve this problem recursively from the most optimal parking to the least optimal one
