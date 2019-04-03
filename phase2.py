@@ -280,7 +280,7 @@ def get_time(lat_ori,lon_ori,lat_des,lon_des,n):
         for i,line in enumerate(html):
             if 'distance' in str(line):
                 distance2=re.search(regInt,str(html[i+1]))
-        return int(distance2.group())/3.1
+        return 60*int(distance2.group())/3.1
 
 U,P = read_input()
 allocate(U,P)
