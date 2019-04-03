@@ -1,5 +1,7 @@
 import math
 from datetime import datetime
+import random
+import sys
 
 #The class to represent location
 class loc:
@@ -194,6 +196,94 @@ def recursiveFunction(U, P, pRank, M, R):
     del(pRank[0])
     return recursiveFunction(U, P, pRank, M, R)
 
+<<<<<<< HEAD:phase2_1.py
+def randSpeed():
+    #km/h
+    drivingSpeed = random.randint(15,60)
+    return drivingSpeed
+
+def get_driving_time(loc1, loc2):
+    speed = randSpeed()
+    dis = math.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
+    time = math.ceil(dis/speed/1000 * 60)
+    return time
+
+def get_walking_time(loc1, loc2):
+    # assume walking speed 4500 meters/h
+    speed = 4500
+    dis = math.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
+    #measured by minitue
+    time = math.ceil(dis/speed * 60)
+    return time
+
+def bruteforce(U, P):
+    for id in U.keys():
+        u = U[id]
+        meters = 2000
+        P = searchParkingWithin(u.destLoc,P, meters)
+        min_value = sys.maxint
+        min_id = 0
+        for id in P.keys():
+            p = P[id]
+            t1 = get_driving_time(u.currLoc, p.loc)
+            t2 = get_walking_time(p.loc, u.destLoc)
+            t = t1 + t2
+            if t < min_value:
+                min_value = t
+                min_id = id
+        u.opt = min_id
+    return
+
+def searchParkingWithin(destLoc, P , meters):
+    res = {}
+    j = 0
+    for id in P.keys():
+        p = P[id]
+        dis = math.sqrt((destLoc.x - p.loc.x) ** 2 + (destLoc.y - p.loc.y) ** 2)
+        if dis <= meters:
+            res[id] = p
+    return res
+
+def greedy(U, P):
+    for id in U.keys():
+        u = U[id]
+        destination = u.destLoc
+        meters = 2000
+        P = searchParkingWithin(destination, P, meters)
+        des = u.destLoc
+        # size = len(P)
+        min_value1 = sys.maxint
+        min_value2 = sys.maxint
+        min_id1 = []
+        min_id2 = []
+        res = {}
+        j = 0
+        time1={}
+        for id in P.keys():
+            p = P[id]
+            t1 = get_driving_time(u.currLoc, p.loc)
+            time1[id] = t1
+            if t1 <= min_value1:
+                min_value1 = t1
+        for id in time1.keys():
+            p = P[id]
+            t1 = time1[id]
+            if t1 == min_value1:
+                min_id1.append(id)
+        time2 = {}
+        for i in range (len(min_id1)):
+            id = min_id1[i]
+            t2 = get_walking_time(P[id].loc, u.destLoc)
+            time2[id] = t2
+            if t2 < min_value2:
+                min_value2 = t2
+        for id in time2.keys():
+            t2 = time2[id]
+            if t2 == min_value2:
+                min_id2.append(id)
+        u.opt = min_id2[0]
+    return
+=======
 def bruteforce(u):
     destination = u.destLoc
     P = search(destination,1)
@@ -202,8 +292,8 @@ def bruteforce(u):
     min_value = sys.maxint
     min_id = 0
     for i in range size:
-        t1 = get_time(cur,P[i],1)
-        t2 = get_time(P[i],destination,2)
+        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
+        t2 = get_time(P[i].loc.x,P[i].loc.y,destination.x,destination.y,2)
         t = t1+t2
         if t < min_value:
             min_value = t
@@ -221,6 +311,7 @@ def search(des,mile):
 def greedy(u):
     destination = u.destLoc
     P = search(destination,1)
+    cur = u.currLoc
     des = u.destLoc
     size = len(P)
     min_value1 = sys.maxint
@@ -230,7 +321,7 @@ def greedy(u):
     res = {}
     j = 0
     for i in range (size):
-        t1 = get_time(cur,P[i].loc)
+        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
         if t1 < min_value1:
             min_value1 = t1
             min_id1[j] = i
@@ -238,7 +329,7 @@ def greedy(u):
     size = len(min_id1)
     j = 0
     for i in range (size):
-        t2 = get_time(P[min_id1[i]].loc,des)
+        t2 = get_time(P[min_id1[i]].loc.x,P[min_id1[i]].loc.y,des.x,des.y,2)
         if t2 < min_value2:
             min_value2 = t2
             min_id2[j] = i
@@ -246,5 +337,46 @@ def greedy(u):
     for i in range (len(min_id2)):
         res[i] = P[min_id2[i]]
     return res
+
+
+import urllib.request
+import json
+import re
+def get_time(lat_ori,lon_ori,lat_des,lon_des,n):
+
+    params = {
+                  'outputFormat': 'json', 
+                  'origins': str(lat_ori)+','+str(lon_ori),
+                  'destinations': str(lat_des)+','+str(lon_des),
+                  'key': 'AIzaSyA6j4jB-6-ahAR7FpNUckSnwbJyrjuQoMw'
+                }
+
+    url='https://maps.googleapis.com/maps/api/distancematrix/'+ \
+                 params['outputFormat']+\
+                '?units=imperial'+\
+                '&origins='+params['origins']+\
+                '&destinations='+params['destinations']+ \
+                '&key='+ params['key']
+
+    with urllib.request.urlopen(url) as response:
+        html = response.readlines()
+    regInt='\d+'
+    if n == 1:    
+        for i,line in enumerate(html):
+            if 'duration' in str(line):
+                time=re.search(regInt,str(html[i+2]))
+        return int(time.group())/60
+    else:
+        for i,line in enumerate(html):
+            if 'distance' in str(line):
+                distance2=re.search(regInt,str(html[i+1]))
+        return 60*int(distance2.group())/3.1
+
+>>>>>>> 32db59630783a29e0992040111f0270840fd53f9:phase2.py
 U,P = read_input()
-allocate(U,P)
+bruteforce(U,P)
+# greedy(U,P)
+for id in U.keys():
+    u = U[id]
+    print u.opt,"opt"
+
