@@ -202,8 +202,8 @@ def bruteforce(u):
     min_value = sys.maxint
     min_id = 0
     for i in range size:
-        t1 = get_time(cur,P[i],1)
-        t2 = get_time(P[i],destination,2)
+        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
+        t2 = get_time(P[i].loc.x,P[i].loc.y,destination.x,destination.y,2)
         t = t1+t2
         if t < min_value:
             min_value = t
@@ -221,6 +221,7 @@ def search(des,mile):
 def greedy(u):
     destination = u.destLoc
     P = search(destination,1)
+    cur = u.currLoc
     des = u.destLoc
     size = len(P)
     min_value1 = sys.maxint
@@ -230,7 +231,7 @@ def greedy(u):
     res = {}
     j = 0
     for i in range (size):
-        t1 = get_time(cur,P[i].loc)
+        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
         if t1 < min_value1:
             min_value1 = t1
             min_id1[j] = i
@@ -238,7 +239,7 @@ def greedy(u):
     size = len(min_id1)
     j = 0
     for i in range (size):
-        t2 = get_time(P[min_id1[i]].loc,des)
+        t2 = get_time(P[min_id1[i]].loc.x,P[min_id1[i]].loc.y,des.x,des.y,2)
         if t2 < min_value2:
             min_value2 = t2
             min_id2[j] = i
@@ -246,6 +247,8 @@ def greedy(u):
     for i in range (len(min_id2)):
         res[i] = P[min_id2[i]]
     return res
+
+
 import urllib.request
 import json
 import re
