@@ -1,5 +1,7 @@
 import math
 from datetime import datetime
+import random
+import sys
 
 #The class to represent location
 class loc:
@@ -194,58 +196,96 @@ def recursiveFunction(U, P, pRank, M, R):
     del(pRank[0])
     return recursiveFunction(U, P, pRank, M, R)
 
-def bruteforce(u):
-    destination = u.destLoc
-    P = search(destination,1)
-    cur = u.currLoc
-    size = len(P)
-    min_value = sys.maxint
-    min_id = 0
-    for i in range size:
-        t1 = get_time(cur,P[i],1)
-        t2 = get_time(P[i],destination,2)
-        t = t1+t2
-        if t < min_value:
-            min_value = t
-            min_id = i
-    return P[min_id]
-def search(des,mile):
+def randSpeed():
+    #km/h
+    drivingSpeed = random.randint(15,60)
+    return drivingSpeed
+
+def get_driving_time(loc1, loc2):
+    speed = randSpeed()
+    dis = math.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
+    time = math.ceil(dis/speed/1000 * 60)
+    return time
+
+def get_walking_time(loc1, loc2):
+    # assume walking speed 4500 meters/h
+    speed = 4500
+    dis = math.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
+    #measured by minitue
+    time = math.ceil(dis/speed * 60)
+    return time
+
+def bruteforce(U, P):
+    for id in U.keys():
+        u = U[id]
+        meters = 2000
+        P = searchParkingWithin(u.destLoc,P, meters)
+        min_value = sys.maxint
+        min_id = 0
+        for id in P.keys():
+            p = P[id]
+            t1 = get_driving_time(u.currLoc, p.loc)
+            t2 = get_walking_time(p.loc, u.destLoc)
+            t = t1 + t2
+            if t < min_value:
+                min_value = t
+                min_id = id
+        u.opt = min_id
+    return
+
+def searchParkingWithin(destLoc, P , meters):
     res = {}
     j = 0
-    for i in len(P):
-        it = interaction(des,P[i].loc)
-        if it.distance_user_parking() <= mile:
-            res[j] = P[i]
-            j = j+1
+    for id in P.keys():
+        p = P[id]
+        dis = math.sqrt((destLoc.x - p.loc.x) ** 2 + (destLoc.y - p.loc.y) ** 2)
+        if dis <= meters:
+            res[id] = p
     return res
-def greedy(u):
-    destination = u.destLoc
-    P = search(destination,1)
-    des = u.destLoc
-    size = len(P)
-    min_value1 = sys.maxint
-    min_value2 = sys.maxint
-    min_id1 = {}
-    min_id2 = {}
-    res = {}
-    j = 0
-    for i in range (size):
-        t1 = get_time(cur,P[i].loc)
-        if t1 < min_value1:
-            min_value1 = t1
-            min_id1[j] = i
-            j = j+1
-    size = len(min_id1)
-    j = 0
-    for i in range (size):
-        t2 = get_time(P[min_id1[i]].loc,des)
-        if t2 < min_value2:
-            min_value2 = t2
-            min_id2[j] = i
-            j = j + 1
-    for i in range (len(min_id2)):
-        res[i] = P[min_id2[i]]
-    return res
+
+def greedy(U, P):
+    for id in U.keys():
+        u = U[id]
+        destination = u.destLoc
+        meters = 2000
+        P = searchParkingWithin(destination, P, meters)
+        des = u.destLoc
+        # size = len(P)
+        min_value1 = sys.maxint
+        min_value2 = sys.maxint
+        min_id1 = []
+        min_id2 = []
+        res = {}
+        j = 0
+        time1={}
+        for id in P.keys():
+            p = P[id]
+            t1 = get_driving_time(u.currLoc, p.loc)
+            time1[id] = t1
+            if t1 <= min_value1:
+                min_value1 = t1
+        for id in time1.keys():
+            p = P[id]
+            t1 = time1[id]
+            if t1 == min_value1:
+                min_id1.append(id)
+        time2 = {}
+        for i in range (len(min_id1)):
+            id = min_id1[i]
+            t2 = get_walking_time(P[id].loc, u.destLoc)
+            time2[id] = t2
+            if t2 < min_value2:
+                min_value2 = t2
+        for id in time2.keys():
+            t2 = time2[id]
+            if t2 == min_value2:
+                min_id2.append(id)
+        u.opt = min_id2[0]
+    return
 U,P = read_input()
-allocate(U,P)
+bruteforce(U,P)
+# greedy(U,P)
+for id in U.keys():
+    u = U[id]
+    print u.opt,"opt"
 
