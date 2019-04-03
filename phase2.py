@@ -246,6 +246,39 @@ def greedy(u):
     for i in range (len(min_id2)):
         res[i] = P[min_id2[i]]
     return res
+import urllib.request
+import json
+import re
+def get_time(lat_ori,lon_ori,lat_des,lon_des,n):
+
+    params = {
+                  'outputFormat': 'json', 
+                  'origins': str(lat_ori)+','+str(lon_ori),
+                  'destinations': str(lat_des)+','+str(lon_des),
+                  'key': 'AIzaSyA6j4jB-6-ahAR7FpNUckSnwbJyrjuQoMw'
+                }
+
+    url='https://maps.googleapis.com/maps/api/distancematrix/'+ \
+                 params['outputFormat']+\
+                '?units=imperial'+\
+                '&origins='+params['origins']+\
+                '&destinations='+params['destinations']+ \
+                '&key='+ params['key']
+
+    with urllib.request.urlopen(url) as response:
+        html = response.readlines()
+    regInt='\d+'
+    if n == 1:    
+        for i,line in enumerate(html):
+            if 'duration' in str(line):
+                time=re.search(regInt,str(html[i+2]))
+        return int(time.group())/60
+    else:
+        for i,line in enumerate(html):
+            if 'distance' in str(line):
+                distance2=re.search(regInt,str(html[i+1]))
+        return int(distance2.group())/3.1
+
 U,P = read_input()
 allocate(U,P)
 
