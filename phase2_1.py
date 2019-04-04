@@ -284,9 +284,54 @@ def greedy(U, P):
         u.opt = min_id2[0]
     return
 
+#Round Robin Search function finds the first parking spot within walking distance and returns it
+def searchParkingWithinRoundRobin(plist, destLoc, P , meters):#special search for round robin
+    j = 0
+    for id in P.keys():
+        p = P[id]
+        dis = math.sqrt((destLoc.x - p.loc.x) ** 2 + (destLoc.y - p.loc.y) ** 2)
+        if dis <= meters and id not in plist:#check if spot in walking dist, and has not been rejected before
+            return id#return first parking spot within walking distance, if its not good enough the user will reject it
+    return -1#return -1 if no parking in walking distance
+
+#User decides whether or not to accept the spot
+def roundRobinApproval():
+    if(random.random() < 0.50):#50% chance of yes
+        return 1
+    else:
+        return 0
+
+'''
+Round robin here means that we assign each user a random spot within walking distance
+Next the user gets to decide whether or not to accept the spot
+If they accept, we give them the spot
+If they reject, we put them at the bottom of the queue
+'''
+def roundRobin(U, P):
+    RRqueue = list(U.keys())#make queue of users
+    while(len(RRqueue)>0):#while there are still users left in queue
+        uid = RRqueue.pop(0)#get first user in queue
+        u = U[uid]#store full user object in u
+        destination = u.destLoc
+        meters = 500#walking distance
+        p = searchParkingWithinRoundRobin(u.pList, destination, P, meters)#get random spot within walking distance
+        if (p == -1):#this means that there are no spots in walking distance, dont ask if they want it
+            u.opt=-1
+        elif(roundRobinApproval()):#ask if user wants spots, and if so assign user spot
+            u.opt = p
+            P[p].numSpot = P[p].numSpot - 1#decrement number of spots at parking location
+            if(P[p].numSpot <= 0):#delete spot so other users dont park there
+               del P[p]
+        else:#add non-accepted spot to users list so we dont offer it again
+            u.pList.append(p)#this is a list of rejected spots
+            RRqueue.append(uid)#add user to back of queue
+            
+    return
+
 U,P = read_input()
-# bruteforce(U,P)
-greedy(U,P)
+roundRobin(U,P)
+#bruteforce(U,P)
+#greedy(U,P)
 for id in U.keys():
     u = U[id]
     print u.opt,"opt"
