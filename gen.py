@@ -3,6 +3,7 @@ from datetime import datetime
 
 userNum = 1000
 filename = 'inputUser.txt'
+# generate the user input data
 with open (filename, 'w') as f:
     for i in range(0, userNum):
         if i > 999:
@@ -78,6 +79,7 @@ with open (filename, 'w') as f:
         f.write('\n')
     f.close()
 
+    # generate the parking input data
     parkingNum = 1000
     filename = 'inputParking.txt'
     with open(filename, 'w') as f:
