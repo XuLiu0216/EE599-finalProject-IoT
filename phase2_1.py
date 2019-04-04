@@ -196,7 +196,6 @@ def recursiveFunction(U, P, pRank, M, R):
     del(pRank[0])
     return recursiveFunction(U, P, pRank, M, R)
 
-<<<<<<< HEAD:phase2_1.py
 def randSpeed():
     #km/h
     drivingSpeed = random.randint(15,60)
@@ -283,96 +282,7 @@ def greedy(U, P):
                 min_id2.append(id)
         u.opt = min_id2[0]
     return
-=======
-def bruteforce(u):
-    destination = u.destLoc
-    P = search(destination,1)
-    cur = u.currLoc
-    size = len(P)
-    min_value = sys.maxint
-    min_id = 0
-    for i in range size:
-        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
-        t2 = get_time(P[i].loc.x,P[i].loc.y,destination.x,destination.y,2)
-        t = t1+t2
-        if t < min_value:
-            min_value = t
-            min_id = i
-    return P[min_id]
-def search(des,mile):
-    res = {}
-    j = 0
-    for i in len(P):
-        it = interaction(des,P[i].loc)
-        if it.distance_user_parking() <= mile:
-            res[j] = P[i]
-            j = j+1
-    return res
-def greedy(u):
-    destination = u.destLoc
-    P = search(destination,1)
-    cur = u.currLoc
-    des = u.destLoc
-    size = len(P)
-    min_value1 = sys.maxint
-    min_value2 = sys.maxint
-    min_id1 = {}
-    min_id2 = {}
-    res = {}
-    j = 0
-    for i in range (size):
-        t1 = get_time(cur.x,cur.y,P[i].loc.x,P[i].loc.y,1)
-        if t1 < min_value1:
-            min_value1 = t1
-            min_id1[j] = i
-            j = j+1
-    size = len(min_id1)
-    j = 0
-    for i in range (size):
-        t2 = get_time(P[min_id1[i]].loc.x,P[min_id1[i]].loc.y,des.x,des.y,2)
-        if t2 < min_value2:
-            min_value2 = t2
-            min_id2[j] = i
-            j = j + 1
-    for i in range (len(min_id2)):
-        res[i] = P[min_id2[i]]
-    return res
 
-
-import urllib.request
-import json
-import re
-def get_time(lat_ori,lon_ori,lat_des,lon_des,n):
-
-    params = {
-                  'outputFormat': 'json', 
-                  'origins': str(lat_ori)+','+str(lon_ori),
-                  'destinations': str(lat_des)+','+str(lon_des),
-                  'key': 'AIzaSyA6j4jB-6-ahAR7FpNUckSnwbJyrjuQoMw'
-                }
-
-    url='https://maps.googleapis.com/maps/api/distancematrix/'+ \
-                 params['outputFormat']+\
-                '?units=imperial'+\
-                '&origins='+params['origins']+\
-                '&destinations='+params['destinations']+ \
-                '&key='+ params['key']
-
-    with urllib.request.urlopen(url) as response:
-        html = response.readlines()
-    regInt='\d+'
-    if n == 1:    
-        for i,line in enumerate(html):
-            if 'duration' in str(line):
-                time=re.search(regInt,str(html[i+2]))
-        return int(time.group())/60
-    else:
-        for i,line in enumerate(html):
-            if 'distance' in str(line):
-                distance2=re.search(regInt,str(html[i+1]))
-        return 60*int(distance2.group())/3.1
-
->>>>>>> 32db59630783a29e0992040111f0270840fd53f9:phase2.py
 U,P = read_input()
 bruteforce(U,P)
 # greedy(U,P)
