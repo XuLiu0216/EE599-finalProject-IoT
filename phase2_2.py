@@ -98,7 +98,7 @@ class interaction:
 
 # read the input and save the data
 def read_input():
-    filename = 'userInput2.txt'
+    filename = 'userInput.txt'
     with open(filename, 'r') as f:
         line = f.readline()
         users = {}
@@ -119,7 +119,7 @@ def read_input():
             users[id] = user
             line = f.readline()
     f.close()
-    filename2 = 'parkingInput2.txt'
+    filename2 = 'parkingInput.txt'
     with open(filename2, 'r') as f:
         line = f.readline()
         parkings = {}
@@ -334,14 +334,3 @@ greedy(U,P)
 for id in U.keys():
     u = U[id]
     print( u.opt, "opt")
-
-ance2=re.search(regInt,str(html[i+1]))
-        return 60*int(distance2.group())/3.1
-
-U, P = read_input()
-bruteforce(U, P)
-# greedy(U,P)
-for id in U.keys():
-    u = U[id]
-    print u.opt, "opt"
-

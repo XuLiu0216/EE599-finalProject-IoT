@@ -1,7 +1,7 @@
 import random
 from datetime import datetime
 
-userNum = 100
+userNum = 1000
 filename = 'inputUser.txt'
 with open (filename, 'w') as f:
     for i in range(0, userNum):
@@ -78,7 +78,7 @@ with open (filename, 'w') as f:
         f.write('\n')
     f.close()
 
-    parkingNum = 100
+    parkingNum = 1000
     filename = 'inputParking.txt'
     with open(filename, 'w') as f:
         for i in range(0, parkingNum):

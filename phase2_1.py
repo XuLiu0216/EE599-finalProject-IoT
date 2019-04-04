@@ -71,9 +71,9 @@ class interaction:
                 return dayCharge
             else:
                 return hourCharge * (self.user.endTime - self.user.startTime)
-    #check if there is avaliable parking spots in self parking
+    #check if there is avaliable parking spots in self parking or if the walk distance is less or equal than 2000 meters
     def check(self):
-        if self.parking.numSpot <= 0:
+        if self.parking.numSpot <= 0 or self.walk_distance() > 2000:
             return False
         else:
             weekday = datetime.strptime(self.user.date, "%Y%m%d").weekday()
@@ -127,8 +127,8 @@ def read_input():
     f.close()
     return users, parkings
 
-#the process to allocate parking to users
-def allocate(U, P):
+#brute force method to find shorest distance solution
+def shortest_distance(U, P):
     u1 = U[1]
     tempList = []
     M = [[0 for col in range(len(P))] for row in range(len(U))]
@@ -155,7 +155,6 @@ def allocate(U, P):
                 Res[u.id - 1][p.id - 1] = 0
 
     recursiveFunction(U, P, pRank, M , Res)
-    print Res
     return
 
 #The recursive function to solve this problem recursively from the most optimal parking to the least optimal one
@@ -196,17 +195,20 @@ def recursiveFunction(U, P, pRank, M, R):
     del(pRank[0])
     return recursiveFunction(U, P, pRank, M, R)
 
+# speed randomization method
 def randSpeed():
     #km/h
     drivingSpeed = random.randint(15,60)
     return drivingSpeed
 
+# method tp get driving time
 def get_driving_time(loc1, loc2):
     speed = randSpeed()
     dis = math.sqrt((loc1.x - loc2.x) ** 2 + (loc1.y - loc2.y) ** 2)
     time = math.ceil(dis/speed/1000 * 60)
     return time
 
+# method tp get walking time
 def get_walking_time(loc1, loc2):
     # assume walking speed 4500 meters/h
     speed = 4500
@@ -215,15 +217,23 @@ def get_walking_time(loc1, loc2):
     time = math.ceil(dis/speed * 60)
     return time
 
-def bruteforce(U, P):
+# brute force method to get shortest time solution
+def shortest_time(U, P):
     for id in U.keys():
         u = U[id]
-        meters = 2000
-        P = searchParkingWithin(u.destLoc,P, meters)
+        # meters = 10000
+        # P = searchParkingWithin(u.destLoc,P, meters)
         min_value = sys.maxint
         min_id = 0
+        validP = {}
         for id in P.keys():
             p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+
+        for id in validP.keys():
+            p = validP[id]
             t1 = get_driving_time(u.currLoc, p.loc)
             t2 = get_walking_time(p.loc, u.destLoc)
             t = t1 + t2
@@ -233,61 +243,117 @@ def bruteforce(U, P):
         u.opt = min_id
     return
 
-#search for parking spots of the meters within destination
-def searchParkingWithin(destLoc, P , meters):
-    res = {}
-    j = 0
-    for id in P.keys():
-        p = P[id]
-        dis = math.sqrt((destLoc.x - p.loc.x) ** 2 + (destLoc.y - p.loc.y) ** 2)
-        if dis <= meters:
-            res[id] = p
-    return res
-
-def greedy(U, P):
+#greedy method for shortest time
+def greedy_time(U, P):
     for id in U.keys():
         u = U[id]
-        destination = u.destLoc
-        meters = 2000
-        P = searchParkingWithin(destination, P, meters)
-        des = u.destLoc
-        # size = len(P)
+        validP = {}
+        # select the valid parkings for this user
+        for id in P.keys():
+            p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+        # if there is no valid parking then go into next loop
+        if len(validP) == 0:
+            continue;
+
         min_value1 = sys.maxint
         min_value2 = sys.maxint
         min_id1 = []
         min_id2 = []
-        res = {}
-        j = 0
         time1={}
-        for id in P.keys():
-            p = P[id]
+        # find a set of optimal solution which has the smallest driving time
+        for id in validP.keys():
+            p = validP[id]
             t1 = get_driving_time(u.currLoc, p.loc)
             time1[id] = t1
             if t1 <= min_value1:
                 min_value1 = t1
+        if len(time1) == 0:
+            continue;
         for id in time1.keys():
-            p = P[id]
+            p = validP[id]
             t1 = time1[id]
             if t1 == min_value1:
                 min_id1.append(id)
+
+        # find a set of optimal solution which has the smallest driving time
         time2 = {}
         for i in range (len(min_id1)):
             id = min_id1[i]
-            t2 = get_walking_time(P[id].loc, u.destLoc)
+            t2 = get_walking_time(validP[id].loc, u.destLoc)
             time2[id] = t2
             if t2 < min_value2:
                 min_value2 = t2
+
         for id in time2.keys():
             t2 = time2[id]
             if t2 == min_value2:
                 min_id2.append(id)
+        # choose the first one as the optimal solution for this user
         u.opt = min_id2[0]
     return
 
+#greedy method for shortest distance
+def greedy_distance(U, P):
+    for id in U.keys():
+        u = U[id]
+        # select the valid parkings for this user
+        validP = {}
+        for id in P.keys():
+            p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+        # if there is no valid parking then go into next loop
+        if len(validP) == 0:
+            continue;
+        min_value1 = sys.maxint
+        min_value2 = sys.maxint
+        min_id1 = []
+        min_id2 = []
+        # find a set of optimal solution which has the smallest driving distance
+        distance1={}
+        for id in validP.keys():
+            p = validP[id]
+            ia = interaction(u, p)
+            d1 = ia.distance_user_parking()
+            distance1[id] = d1
+            if d1 <= min_value1:
+                min_value1 = d1
+        if len(distance1) == 0:
+            continue;
+        for id in distance1.keys():
+            d1 = distance1[id]
+            if d1 == min_value1:
+                min_id1.append(id)
+
+        # find a set of optimal solution which has the smallest driving distance
+        distance2 = {}
+        for i in range (len(min_id1)):
+            id = min_id1[i]
+            p = validP[id]
+            ia = interaction(u,p)
+            d2 = ia.walk_distance()
+            distance2[id] = d2
+            if d2 < min_value2:
+                min_value2 = d2
+        for id in distance2.keys():
+            d2 = distance2[id]
+            if d2 == min_value2:
+                min_id2.append(id)
+
+        u.opt = min_id2[0]
+        # print u.opt
+    return
+
 U,P = read_input()
-# bruteforce(U,P)
-greedy(U,P)
-for id in U.keys():
-    u = U[id]
-    print u.opt,"opt"
+shortest_time(U, P)
+# shortest_distance(U,P)
+# greedy_time(U,P)
+# greedy_distance(U,P)
+for i in range(0, 999):
+    u = U[i]
+    print i, u.opt,"opt"
 
