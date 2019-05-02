@@ -2,7 +2,8 @@ import math
 from datetime import datetime
 import random
 import sys
-
+import os
+import time
 
 # The class to represent location
 class loc:
@@ -139,74 +140,74 @@ def read_input():
 
 
 # the process to allocate parking to users
-def allocate(U, P):
-    u1 = U[1]
-    tempList = []
-    M = [[0 for col in range(len(P))] for row in range(len(U))]
-    Res = [[0 for col in range(len(P))] for row in range(len(U))]
-    pRank = []
-    for i in range(len(P)):
-        temp = interaction(u1, P[i + 1])
-        tempList.append(temp)
-    tempList.sort(key=lambda interaction: interaction.walk_distance())
-    for t in tempList:
-        pRank.append(t.parking.id)
-
-    for m in range(len(U)):
-        u = U[m + 1]
-        for n in range(len(P)):
-            p = P[n + 1]
-            i = interaction(u, p)
-            if (i.check()):
-                M[u.id - 1][p.id - 1] = 1
-                p.uList.append(u)
-                p.count += 1
-                Res[u.id - 1][p.id - 1] = 0
-            else:
-                Res[u.id - 1][p.id - 1] = 0
-
-    recursiveFunction(U, P, pRank, M, Res)
-    print Res
-    return
+# def allocate(U, P):
+#     u1 = U[1]
+#     tempList = []
+#     M = [[0 for col in range(len(P))] for row in range(len(U))]
+#     Res = [[0 for col in range(len(P))] for row in range(len(U))]
+#     pRank = []
+#     for i in range(len(P)):
+#         temp = interaction(u1, P[i + 1])
+#         tempList.append(temp)
+#     tempList.sort(key=lambda interaction: interaction.walk_distance())
+#     for t in tempList:
+#         pRank.append(t.parking.id)
+#
+#     for m in range(len(U)):
+#         u = U[m + 1]
+#         for n in range(len(P)):
+#             p = P[n + 1]
+#             i = interaction(u, p)
+#             if (i.check()):
+#                 M[u.id - 1][p.id - 1] = 1
+#                 p.uList.append(u)
+#                 p.count += 1
+#                 Res[u.id - 1][p.id - 1] = 0
+#             else:
+#                 Res[u.id - 1][p.id - 1] = 0
+#
+#     recursiveFunction(U, P, pRank, M, Res)
+#     print Res
+#     return
 
 
 # The recursive function to solve this problem recursively from the most optimal parking to the least optimal one
 # Every time we enter this function we only check the first parking structure in pRank, if there is enough spots,
 # the allocate, if not ,then sort all distance between the user who is valid to this parking entity and this
 # specific parking
-def recursiveFunction(U, P, pRank, M, R):
-    # base case to stop
-    if len(U) == 0 or len(P) == 0:
-        return
-    id = pRank[0]
-    # no conflict:
-    # if there is enough parking spots here
-    if P[id].count <= P[id].numSpot:
-        for key in U.keys():
-            if M[key - 1][id - 1] == 1:
-                R[key - 1][id - 1] = 1
-                U[key].opt = id
-                U.pop(key)
-    # if not ,which means there will be several users who wants the same spot => conflict:
-    else:
-        IA = []
-        for key in U.keys():
-            if M[key - 1][id - 1] == 1:
-                ia = interaction(U[key], P[id])
-                IA.append(ia)
-        # sort all the users by the distance between user and parking
-        IA.sort(key=lambda interaction: interaction.distance_user_parking())
-        for j in range(P[id].numSpot):
-            userID = IA[j].user.id
-            R[userID - 1][id - 1] = 1
-            U[userID].opt = id
-            U.pop(userID)
-            for k in range(id, len(M[0])):
-                M[userID - 1][k] = 0
-    # delete the parking entity we checked in this round and step into next round
-    P.pop(id)
-    del (pRank[0])
-    return recursiveFunction(U, P, pRank, M, R)
+# def recursiveFunction(U, P, pRank, M, R):
+#     # base case to stop
+#     if len(U) == 0 or len(P) == 0:
+#         return
+#     id = pRank[0]
+#     # no conflict:
+#     # if there is enough parking spots here
+#     if P[id].count <= P[id].numSpot:
+#         for key in U.keys():
+#             if M[key - 1][id - 1] == 1:
+#                 R[key - 1][id - 1] = 1
+#                 U[key].opt = id
+#                 U.pop(key)
+#     # if not ,which means there will be several users who wants the same spot => conflict:
+#     else:
+#         IA = []
+#         for key in U.keys():
+#             if M[key - 1][id - 1] == 1:
+#                 ia = interaction(U[key], P[id])
+#                 IA.append(ia)
+#         # sort all the users by the distance between user and parking
+#         IA.sort(key=lambda interaction: interaction.distance_user_parking())
+#         for j in range(P[id].numSpot):
+#             userID = IA[j].user.id
+#             R[userID - 1][id - 1] = 1
+#             U[userID].opt = id
+#             U.pop(userID)
+#             for k in range(id, len(M[0])):
+#                 M[userID - 1][k] = 0
+#     # delete the parking entity we checked in this round and step into next round
+#     P.pop(id)
+#     del (pRank[0])
+#     return recursiveFunction(U, P, pRank, M, R)
 
 
 def randSpeed():
@@ -230,16 +231,50 @@ def get_walking_time(loc1, loc2):
     time = math.ceil(dis / speed * 60)
     return time
 
-
-def bruteforce(U, P):
+# brute force method to get shortest distance solution
+def shortest_distance(U, P):
     for id in U.keys():
         u = U[id]
-        meters = 2000
-        P = searchParkingWithin(u.destLoc, P, meters)
+        # meters = 10000
+        # P = searchParkingWithin(u.destLoc,P, meters)
         min_value = sys.maxint
         min_id = 0
+        validP = {}
         for id in P.keys():
             p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+
+        for id in validP.keys():
+            p = validP[id]
+            ia = interaction(u,p)
+            d1 = ia.walk_distance()
+            d2 = ia.distance_user_parking()
+            d = d1 + d2
+            if d < min_value:
+                min_value = d
+                min_id = id
+        u.opt = min_id
+    return
+
+# brute force method to get shortest time solution
+def shortest_time(U, P):
+    for id in U.keys():
+        u = U[id]
+        # meters = 10000
+        # P = searchParkingWithin(u.destLoc,P, meters)
+        min_value = sys.maxint
+        min_id = 0
+        validP = {}
+        for id in P.keys():
+            p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+
+        for id in validP.keys():
+            p = validP[id]
             t1 = get_driving_time(u.currLoc, p.loc)
             t2 = get_walking_time(p.loc, u.destLoc)
             t = t1 + t2
@@ -249,6 +284,10 @@ def bruteforce(U, P):
         u.opt = min_id
     return
 
+
+def bruteforce_c():
+	os.system('g++ bf.cpp')
+	os.system('./a.out')
 
 # search for parking spots of the meters within destination
 def searchParkingWithin(destLoc, P, meters):
@@ -262,44 +301,109 @@ def searchParkingWithin(destLoc, P, meters):
     return res
 
 
-def greedy(U, P):
+#greedy method for shortest time
+def greedy_time(U, P):
     for id in U.keys():
         u = U[id]
-        destination = u.destLoc
-        meters = 2000
-        P = searchParkingWithin(destination, P, meters)
-        des = u.destLoc
-        # size = len(P)
+        validP = {}
+        # select the valid parkings for this user
+        for id in P.keys():
+            p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+        # if there is no valid parking then go into next loop
+        if len(validP) == 0:
+            continue;
+
         min_value1 = sys.maxint
         min_value2 = sys.maxint
         min_id1 = []
         min_id2 = []
-        res = {}
-        j = 0
-        time1 = {}
-        for id in P.keys():
-            p = P[id]
+        time1={}
+        # find a set of optimal solution which has the smallest driving time
+        for id in validP.keys():
+            p = validP[id]
             t1 = get_driving_time(u.currLoc, p.loc)
             time1[id] = t1
             if t1 <= min_value1:
                 min_value1 = t1
+        if len(time1) == 0:
+            continue;
         for id in time1.keys():
-            p = P[id]
+            p = validP[id]
             t1 = time1[id]
             if t1 == min_value1:
                 min_id1.append(id)
+
+        # find a set of optimal solution which has the smallest driving time
         time2 = {}
-        for i in range(len(min_id1)):
+        for i in range (len(min_id1)):
             id = min_id1[i]
-            t2 = get_walking_time(P[id].loc, u.destLoc)
+            t2 = get_walking_time(validP[id].loc, u.destLoc)
             time2[id] = t2
             if t2 < min_value2:
                 min_value2 = t2
+
         for id in time2.keys():
             t2 = time2[id]
             if t2 == min_value2:
                 min_id2.append(id)
+        # choose the first one as the optimal solution for this user
         u.opt = min_id2[0]
+    return
+
+#greedy method for shortest distance
+def greedy_distance(U, P):
+    for id in U.keys():
+        u = U[id]
+        # select the valid parkings for this user
+        validP = {}
+        for id in P.keys():
+            p = P[id]
+            ia = interaction(u, p)
+            if ia.check():
+                validP[id] = p
+        # if there is no valid parking then go into next loop
+        if len(validP) == 0:
+            continue;
+        min_value1 = sys.maxint
+        min_value2 = sys.maxint
+        min_id1 = []
+        min_id2 = []
+        # find a set of optimal solution which has the smallest driving distance
+        distance1={}
+        for id in validP.keys():
+            p = validP[id]
+            ia = interaction(u, p)
+            d1 = ia.distance_user_parking()
+            distance1[id] = d1
+            if d1 <= min_value1:
+                min_value1 = d1
+        if len(distance1) == 0:
+            continue;
+        for id in distance1.keys():
+            d1 = distance1[id]
+            if d1 == min_value1:
+                min_id1.append(id)
+
+        # find a set of optimal solution which has the smallest driving distance
+        distance2 = {}
+        for i in range (len(min_id1)):
+            id = min_id1[i]
+            p = validP[id]
+            ia = interaction(u,p)
+            d2 = ia.walk_distance()
+            distance2[id] = d2
+            if d2 < min_value2:
+                min_value2 = d2
+        for id in distance2.keys():
+            d2 = distance2[id]
+            if d2 == min_value2:
+                min_id2.append(id)
+
+        u.opt = min_id2[0]
+        # print u.opt
     return
 
 
@@ -351,9 +455,50 @@ def roundRobin(U, P):
 
     return
 
+def main():
+    U, P = read_input()
+    dataSize = int(sys.argv[1])
+    pref = sys.argv[2]
+    alg = sys.argv[3]
 
-U, P = read_input()
-roundRobin(U, P)
-for id in U.keys():
-    u = U[id]
-    print "The optimal parking spot ID for User of ID ", id, " is ", u.opt
+    # when dataSize is less than 500, we could choose the algorithm by input from command line
+    start = time.time()
+    if dataSize <= 500:
+        if pref == 'time':
+            if alg == 'greedy':
+                greedy_time(U,P)
+            elif alg == 'bruteForce':
+                shortest_time(U, P)
+            else:
+                roundRobin(U,P)
+        elif pref == 'distance':
+            if alg == 'greedy':
+                greedy_distance(U, P)
+            elif alg == 'bruteForce':
+                shortest_distance(U, P)
+            elif alg == 'roundRobin':
+                roundRobin(U, P)
+
+    # when dataSize is greater than 1000, bruteforce algorithm will be abandoned and call roundRobin automatically
+    elif dataSize <= 1000:
+        if alg == 'greedy':
+            if pref == 'time':
+                greedy_time(U, P)
+            elif pref == 'distance':
+                greedy_distance(U, P)
+        else:
+            roundRobin(U, P)
+    # when dataSize is greater than 1000, roundRobin will be called automatically
+    else:
+        roundRobin(U, P)
+    end = time.time()
+    print "Running time for " + pref + " based " + alg + " algorithm is:", end - start
+
+    with open('output.txt', 'w') as f:
+        for id in U.keys():
+           u = U[id]
+           # user ID followed by its optimal parking ID in every line
+           f.write(str(id) + " "+ str(u.opt) + "\n")
+
+if __name__ == '__main__':
+    main()
