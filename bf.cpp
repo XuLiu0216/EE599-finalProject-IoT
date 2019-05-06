@@ -1,4 +1,5 @@
 #include<iostream>
+#include <iterator>
 #include<fstream>
 #include<string>
 #include<math.h>
@@ -9,8 +10,13 @@
 #include<bits/stdc++.h> 
 #include <cmath>
 #include <ctime>
+#include<map>
+#include "loc.h"
+#include<set>
 using namespace std;
-class loc{
+class UserEntity;
+class ParkingEntities;
+/*class loc{
 public:
 	int x;
 	int y;
@@ -19,60 +25,243 @@ public:
 		this->x = x;
 		this->y = y;
 	}
-};
-class UserEntity{
+};*/
+class Entity 
+{
+private:
+   int id; 
+   loc Loc;
+   int startTime;
+   int endTime;
+   
 public:
-	
-	int id;
-	loc currLoc;
-	int pref;
-	int budget;
-	loc destLoc;
-	int date;
-	int startTime;
-	int endTime;
-	int* pList;
-	int opt;
-	UserEntity(){}
-	UserEntity(int id, loc currLoc, int pref, int budget, loc destLoc, int date,int startTime, int endTime){
-		this->id = id;
-		this->currLoc = currLoc;
-		this->pref = pref;
-		this->budget = budget;
-		this->destLoc = destLoc;
-		this->date = date;
-		this->startTime = startTime;
-		this->endTime = endTime;
-		this->opt = -1;
-	}
+   // int *List;
+    virtual void print_result() = 0; 
+    int get_id() { return id; } 
+    void set_id(int ID){this->id = ID;}
+    loc get_loc(){ return Loc;}
+    void set_loc(loc location){this->Loc = location;}
+    int get_startTime(){ return startTime;}
+    void set_startTime(int st){this->startTime = st;}
+    int get_endTime(){ return endTime;}
+    void set_endTime(int nt){this->endTime = nt;}
+    //int* get_list(){ return List;}
+    friend class interaction;
 };
-class ParkingEntities{
-public:        
-	int id;
-        loc location;
+/*class UserEntity:public Entity{
+private:
+
+        //int id;
+        //loc currLoc;
+        int pref;
+        int budget;
+        loc destLoc;
+        int date;
+        //int startTime;
+        //int endTime;
+        //int* pList;
+        //int opt;
+public:
+        ParkingEntities* pList;
+        ParkingEntities opt;
+//      int opt_id;
+        UserEntity(){}
+        UserEntity(int id, loc currLoc, int pref, int budget, loc destLoc, int date,int startTime, int endTime){
+                set_id(id);
+                //this->currLoc = currLoc;
+                set_loc(currLoc);
+                this->pref = pref;
+                this->budget = budget;
+                this->destLoc = destLoc;
+                this->date = date;
+                set_startTime(startTime);
+                set_endTime(endTime);
+                //this->opt = -1;
+        }
+        ParkingEntities get_opt(){return opt;}
+        loc get_destLoc(){return destLoc;}
+        int get_pref(){return pref;}
+        int get_date(){return date;}
+        void print_result(){
+                cout << "User id: " << get_id() <<", "<< "opt " << get_opt().get_id() << endl;
+        }
+	friend class ParkingEntities;
+
+};
+ */
+class ParkingEntities:public Entity{
+private:        
+	//int id;
+        //loc location;
         int charge;
         int maxTime;
         int workday;
-        int startTime;
-        int endTime;
+        //int startTime;
+        //int endTime;
         int numSpot;
         int count;
-        int* uList;
+	//UserEntity& u;
+        //int* uList;
+public:
 	 ParkingEntities(){}
         ParkingEntities(int id,loc loca, int charge, int maxTime,int workday, int startTime, int endTime, int numSpot){
-        this->id = id;
-        this->location = loca;
+        set_id(id);
+        //this->location = loca;
+	set_loc(loca);
         this->charge = charge;
         this->maxTime = maxTime;
         this->workday = workday;
-        this->startTime = startTime;
-        this->endTime = endTime;
+        set_startTime(startTime);
+        set_endTime ( endTime);
         this->numSpot = numSpot;
         this->count = 0;
         }
+   	int get_charge(){return charge;}
+	int get_maxTime(){return maxTime;}
+	int get_workday(){return workday;}
+	int get_numSpot(){return numSpot;}
+	int get_count(){return count;} 
+	void print_result(){
+		cout << "Parking id: " << get_id() << ", " << "has " << get_numSpot() << "spots" << endl;
+}
+/*      int get_cost(UserEntity u){
+                int hour = charge/100;
+                int day = charge%100;
+                if(hour == 0){
+                        return day;
+                }
+                else if(day == 0){
+                        return hour;
+                }
+                else{
+                        if(day < hour*(u.get_endTime()-u.get_startTime())){
+                                return day;
+                        }
+                        else{
+                                return hour*(u.get_endTime()-u.get_startTime());
+                        }
+                }
+        }*/
+friend class interaction;
+	
 };
+
+class UserEntity:public Entity{
+private:
+
+        //int id;
+        //loc currLoc;
+        int pref;
+        int budget;
+        loc destLoc;
+        int date;
+	double drivetime;
+	double walktime;
+        //int startTime;
+        //int endTime;
+        //int* pList;
+        //int opt;
+public:
+        ParkingEntities* pList;
+        set<int> near;
+        ParkingEntities opt;
+//      int opt_id;
+        UserEntity():drivetime(INT_MAX-0.00),walktime(INT_MAX-0.00){}
+        UserEntity(int id, loc currLoc, int pref, int budget, loc destLoc, int date,int startTime, int endTime){
+                set_id(id);
+                //this->currLoc = currLoc;
+                set_loc(currLoc);
+                this->pref = pref;
+                this->budget = budget;
+                this->destLoc = destLoc;
+                this->date = date;
+                set_startTime(startTime);
+                set_endTime(endTime);
+                //this->opt = -1;
+        }
+        ParkingEntities get_opt(){return opt;}
+        loc get_destLoc(){return destLoc;}
+        int get_pref(){return pref;}
+        int get_date(){return date;}
+	double get_walk(){return walktime;}
+	double get_drive(){return drivetime;}
+        void print_result(){
+                cout << "User id: " << get_id() <<", "<< "opt " << get_opt().get_id() << endl;
+        }
+        friend class interaction;
+
+};
+
 vector<UserEntity> U;
 vector<ParkingEntities> P;
+map<int, ParkingEntities> pmap;
+class interaction{
+public:
+UserEntity* u;
+ParkingEntities* p;
+interaction(UserEntity* in_u,ParkingEntities* in_p){this->u = in_u;this->p = in_p;}
+int get_cost(){
+                int hour =(*p).charge/100;
+                int day = (*p).charge%100;
+                if(hour == 0){
+                        return day;
+                }
+                else if(day == 0){
+                        return hour;
+                }
+                else{
+                        if(day < hour*((*u).endTime-(*u).startTime)){
+                                return day;
+                        }
+                        else{
+                                return hour*((*u).endTime-(*u).startTime);
+                        }
+                }
+        }
+bool check(){
+	if((*p).numSpot > 0){
+	if((*u).startTime >= (*p).startTime && (*u).endTime <= (*p).endTime && (*u).endTime - (*u).startTime <(*p).maxTime){
+                    if(get_cost() <= (*u).budget){
+                        return true;
+			}
+	}
+	}
+            return false;
+}
+
+void searchParkingWithin(int meters){
+  //  vector<ParkingEntities> res;
+    (*u).near.clear();
+    double dis;
+    ParkingEntities p;
+    for (int i = 0; i < P.size(); i++){
+        p = P[i];
+        dis = sqrt(pow(((*u).destLoc.x - p.Loc.x),2) +pow(((*u).destLoc.y - p.Loc.y),2));
+        if (dis <= meters){
+            //res.push_back(p);
+		(*u).near.insert(p.id);
+	
+        }
+
+}
+}
+void get_driving_time(){
+    srand(time(NULL));
+    int speed = rand()%45+15;
+    double dis = sqrt(pow(((*u).Loc.x - (*p).Loc.x), 2) +pow( ((*u).Loc.y - (*p).Loc.y), 2));
+    double time = ((dis / speed) / 1000 )* 60;
+    (*u).drivetime= time;
+}
+
+
+void get_walking_time(){
+    //assume walking speed 4500 meters/h
+    (*u).walktime =   (sqrt(pow(((*p).Loc.x - (*u).destLoc.x), 2) +pow(((*p).Loc.y -(*u).destLoc.y), 2))/4500)*60;
+}
+
+};
+
+
 void read_user_input(istream & infile){
     
         string line;
@@ -90,7 +279,8 @@ void read_user_input(istream & infile){
             int start = atoi((line.substr(30,2)).c_str());
             int end = atoi((line.substr(32,2)).c_str());
             UserEntity user = UserEntity(id, userLoc,pref,budget, destLoc, date, start, end);
-            U.push_back(user);
+           U.push_back(user);
+		//U.insert(user);
            }
 }
 void read_parking_input(istream & infile){
@@ -109,15 +299,19 @@ void read_parking_input(istream & infile){
             
             ParkingEntities parking = ParkingEntities(id, parkingLoc, charge, maxtime, workday, start, end, numSpot);
    P.push_back(parking);
+	//P.insert(parking);
+   pmap.insert(pair<int, ParkingEntities>(id, parking)); 
 }
 }
 vector<ParkingEntities> searchParkingWithin(loc destLoc,vector<ParkingEntities> Pk, int meters){
     vector<ParkingEntities> res;
     double dis;
         ParkingEntities p;
+	//set<ParkingEntities>::iterator it;
+   // for(it=Pk.begin();it!=Pk.end();it++){
     for (int i = 0; i < Pk.size(); i++){
         p = Pk[i];
-        dis = sqrt(pow((destLoc.x - p.location.x),2) +pow((destLoc.y - p.location.y),2));
+        dis = sqrt(pow((destLoc.x - p.get_loc().x),2) +pow((destLoc.y - p.get_loc().y),2));
         if (dis <= meters){
             res.push_back(p);
         }
@@ -136,11 +330,7 @@ double get_driving_time(loc loc1, loc loc2){
 
 double get_walking_time(loc loc1,loc loc2){
     //assume walking speed 4500 meters/h
-    int speed = 4500;
-    double dis = sqrt(pow((loc1.x - loc2.x), 2) +pow((loc1.y - loc2.y), 2));
-    //measured by minitue
-    double time = (dis / speed) * 60;
-    return time;
+    return  (sqrt(pow((loc1.x - loc2.x), 2) +pow((loc1.y - loc2.y), 2))/4500)*60;
 }
 
 void bruteforce(){
@@ -153,23 +343,43 @@ void bruteforce(){
 	ParkingEntities p;
 	int meters = 2000;
     for(int i = 0; i < U.size(); i++){
-        
-        vector<ParkingEntities> P2 = searchParkingWithin(U[i].destLoc, P, meters);
+      // set<ParkingEntities>::iterator it;
+      //for(it=U.begin();it!=U.end();it++){  
+	interaction one = interaction(& U[i], &p);
+        one.searchParkingWithin(meters); 
+	set <int > :: iterator itr; 
+	for(itr = U[i].near.begin(); itr!= U[i].near.end(); itr++){
+		int id = *itr;
+		ParkingEntities p2 =  pmap.find(id)->second;
+		interaction two = interaction(&U[i],& p2);
+		if(!two.check()){
+			U[i].near.erase(id);
+			continue;
+		}
+	}
+        //vector<ParkingEntities> P2 = searchParkingWithin(U[i].get_destLoc(), P, meters);
         min_value = INT_MAX-0.00;
         min_id = -1;
-        for(int j = 0; j < P2.size(); j++){
-            p = P2[j];
-            t1 = get_driving_time(U[i].currLoc, p.location);
-            t2 = get_walking_time(p.location, U[i].destLoc);
-            t = t1 + t2;
-//	    cout << t << endl;
-            if (t < min_value){
-                min_value = t;
-                min_id = p.id;
+        //for(int j = 0; j < P2.size(); j++){
+	 for(itr = U[i].near.begin(); itr!= U[i].near.end(); itr++){
+            //p = P2[j];
+            //t1 = get_driving_time(U[i].get_loc(), p.get_loc());
+            //t2 = get_walking_time(p.get_loc(), U[i].get_destLoc());
+            //t = t1 + t2;
+		 int id = *itr;
+                ParkingEntities p3 =  pmap.find(id)->second;
+	    interaction three = interaction(&U[i],& p3);
+		three.get_walking_time();
+		three.get_driving_time();
+           // if (t < min_value){
+		if(U[i].get_walk()+U[i].get_drive() < min_value){
+                min_value = U[i].get_walk()+U[i].get_drive();
+                //min_id = p.get_id();
+		min_id = id;
 		}
 	}
 	//cout << min_id << endl;
-        U[i].opt = min_id;
+        U[i].opt = pmap.find(min_id)->second;
 }
 }
 	
@@ -208,8 +418,11 @@ cout << endl;
 */
 bruteforce();
 //vector<ParkingEntities> res = searchParkingWithin(U[0].destLoc,P,2000);
+// set<ParkingEntities>::iterator it;
  for(int i = 0; i < U.size();i++){
-  cout << U[i].opt << endl;
+// for(it=U.begin();it!=U.end();it++){   
+ //cout <<i<<"th user's opt: "<< U[i].opt << endl;
+  U[i].print_result();
 }
 
 	return 0;
