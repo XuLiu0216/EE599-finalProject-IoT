@@ -127,73 +127,73 @@ def read_input():
     f.close()
     return users, parkings
 
-#brute force method to find shorest distance solution
-def shortest_distance(U, P):
-    u1 = U[1]
-    tempList = []
-    M = [[0 for col in range(len(P))] for row in range(len(U))]
-    Res = [[0 for col in range(len(P))] for row in range(len(U))]
-    pRank = []
-    for i in range(len(P)):
-        temp = interaction(u1, P[i + 1])
-        tempList.append(temp)
-    tempList.sort(key=lambda interaction: interaction.walk_distance())
-    for t in tempList:
-        pRank.append(t.parking.id)
-
-    for m in range(len(U)):
-        u = U[m + 1]
-        for n in range(len(P)):
-            p = P[n + 1]
-            i = interaction(u, p)
-            if(i.check()):
-                M[u.id - 1][p.id - 1] = 1
-                p.uList.append(u)
-                p.count += 1
-                Res[u.id - 1][p.id - 1] = 0
-            else:
-                Res[u.id - 1][p.id - 1] = 0
-
-    recursiveFunction(U, P, pRank, M , Res)
-    return
-
-#The recursive function to solve this problem recursively from the most optimal parking to the least optimal one
-#Every time we enter this function we only check the first parking structure in pRank, if there is enough spots,
-#the allocate, if not ,then sort all distance between the user who is valid to this parking entity and this
-#specific parking
-def recursiveFunction(U, P, pRank, M, R):
-    #base case to stop
-    if len(U) == 0 or len(P) == 0:
-        return
-    id = pRank[0]
-    #no conflict:
-    #if there is enough parking spots here
-    if P[id].count <= P[id].numSpot:
-        for key in U.keys():
-            if M[key - 1][id - 1] == 1:
-                R[key - 1][id - 1] = 1
-                U[key].opt = id
-                U.pop(key)
-    #if not ,which means there will be several users who wants the same spot => conflict:
-    else:
-        IA = []
-        for key in U.keys():
-            if M[key - 1][id - 1] == 1:
-                ia = interaction(U[key], P[id])
-                IA.append(ia)
-        #sort all the users by the distance between user and parking
-        IA.sort(key=lambda interaction: interaction.distance_user_parking())
-        for j in range(P[id].numSpot):
-            userID = IA[j].user.id
-            R[userID - 1][id - 1] = 1
-            U[userID].opt = id
-            U.pop(userID)
-            for k in range(id, len(M[0])):
-                M[userID - 1][k] = 0
-    #delete the parking entity we checked in this round and step into next round
-    P.pop(id)
-    del(pRank[0])
-    return recursiveFunction(U, P, pRank, M, R)
+# #brute force method to find shorest distance solution
+# def allocate(U, P):
+#     u1 = U[1]
+#     tempList = []
+#     M = [[0 for col in range(len(P))] for row in range(len(U))]
+#     Res = [[0 for col in range(len(P))] for row in range(len(U))]
+#     pRank = []
+#     for i in range(len(P)):
+#         temp = interaction(u1, P[i + 1])
+#         tempList.append(temp)
+#     tempList.sort(key=lambda interaction: interaction.walk_distance())
+#     for t in tempList:
+#         pRank.append(t.parking.id)
+#
+#     for m in range(len(U)):
+#         u = U[m + 1]
+#         for n in range(len(P)):
+#             p = P[n + 1]
+#             i = interaction(u, p)
+#             if(i.check()):
+#                 M[u.id - 1][p.id - 1] = 1
+#                 p.uList.append(u)
+#                 p.count += 1
+#                 Res[u.id - 1][p.id - 1] = 0
+#             else:
+#                 Res[u.id - 1][p.id - 1] = 0
+#
+#     recursiveFunction(U, P, pRank, M , Res)
+#     return
+#
+# #The recursive function to solve this problem recursively from the most optimal parking to the least optimal one
+# #Every time we enter this function we only check the first parking structure in pRank, if there is enough spots,
+# #the allocate, if not ,then sort all distance between the user who is valid to this parking entity and this
+# #specific parking
+# def recursiveFunction(U, P, pRank, M, R):
+#     #base case to stop
+#     if len(U) == 0 or len(P) == 0:
+#         return
+#     id = pRank[0]
+#     #no conflict:
+#     #if there is enough parking spots here
+#     if P[id].count <= P[id].numSpot:
+#         for key in U.keys():
+#             if M[key - 1][id - 1] == 1:
+#                 R[key - 1][id - 1] = 1
+#                 U[key].opt = id
+#                 U.pop(key)
+#     #if not ,which means there will be several users who wants the same spot => conflict:
+#     else:
+#         IA = []
+#         for key in U.keys():
+#             if M[key - 1][id - 1] == 1:
+#                 ia = interaction(U[key], P[id])
+#                 IA.append(ia)
+#         #sort all the users by the distance between user and parking
+#         IA.sort(key=lambda interaction: interaction.distance_user_parking())
+#         for j in range(P[id].numSpot):
+#             userID = IA[j].user.id
+#             R[userID - 1][id - 1] = 1
+#             U[userID].opt = id
+#             U.pop(userID)
+#             for k in range(id, len(M[0])):
+#                 M[userID - 1][k] = 0
+#     #delete the parking entity we checked in this round and step into next round
+#     P.pop(id)
+#     del(pRank[0])
+#     return recursiveFunction(U, P, pRank, M, R)
 
 # speed randomization method
 def randSpeed():
@@ -349,11 +349,10 @@ def greedy_distance(U, P):
     return
 
 U,P = read_input()
-shortest_time(U, P)
-# shortest_distance(U,P)
+# shortest_time(U, P)
 # greedy_time(U,P)
 # greedy_distance(U,P)
 for i in range(0, 999):
     u = U[i]
-    print i, u.opt,"opt"
+    print "The optimal parking spot ID for User of ID " ,i , " is ", u.opt
 

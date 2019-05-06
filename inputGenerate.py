@@ -1,7 +1,8 @@
 import random
 from datetime import datetime
+import sys
 
-userNum = 1000
+userNum = int(sys.argv[1])
 filename = 'inputUser.txt'
 # generate the user input data
 with open (filename, 'w') as f:
@@ -80,64 +81,64 @@ with open (filename, 'w') as f:
     f.close()
 
     # generate the parking input data
-    parkingNum = 1000
-    filename = 'inputParking.txt'
-    with open(filename, 'w') as f:
-        for i in range(0, parkingNum):
-            if i > 999:
-                f.write(str(i))
-            elif i > 99:
-                f.write('0' + str(i))
-            elif i > 9:
-                f.write('00' + str(i))
-            else:
-                f.write('000' + str(i))
-            parking_x = random.randint(0, 9999)
-            if parking_x > 999:
-                f.write(str(parking_x))
-            elif parking_x > 99:
-                f.write('0' + str(parking_x))
-            elif parking_x > 9:
-                f.write('00' + str(parking_x))
-            else:
-                f.write('000' + str(parking_x))
-            parking_y = random.randint(0, 9999)
-            if parking_y > 999:
-                f.write(str(parking_y))
-            elif parking_y > 99:
-                f.write('0' + str(parking_y))
-            elif parking_y > 9:
-                f.write('00' + str(parking_y))
-            else:
-                f.write('000' + str(parking_y))
-            hourCharge = random.randint(0,5)
-            f.write('0'+ str(hourCharge))
-            dayCharge = random.randint(15, 30)
-            f.write(str(dayCharge))
-            durationList = [1,2,3,4,24]
-            duration = durationList[random.randint(0, 4)]
-            if duration > 9:
-                f.write(str(duration))
-            else:
-                f.write('0' + str(duration))
+parkingNum = int(sys.argv[2])
+filename = 'inputParking.txt'
+with open(filename, 'w') as f:
+    for i in range(0, parkingNum):
+        if i > 999:
+            f.write(str(i))
+        elif i > 99:
+            f.write('0' + str(i))
+        elif i > 9:
+            f.write('00' + str(i))
+        else:
+            f.write('000' + str(i))
+        parking_x = random.randint(0, 9999)
+        if parking_x > 999:
+            f.write(str(parking_x))
+        elif parking_x > 99:
+            f.write('0' + str(parking_x))
+        elif parking_x > 9:
+            f.write('00' + str(parking_x))
+        else:
+            f.write('000' + str(parking_x))
+        parking_y = random.randint(0, 9999)
+        if parking_y > 999:
+            f.write(str(parking_y))
+        elif parking_y > 99:
+            f.write('0' + str(parking_y))
+        elif parking_y > 9:
+            f.write('00' + str(parking_y))
+        else:
+            f.write('000' + str(parking_y))
+        hourCharge = random.randint(0,5)
+        f.write('0'+ str(hourCharge))
+        dayCharge = random.randint(15, 30)
+        f.write(str(dayCharge))
+        durationList = [1,2,3,4,24]
+        duration = durationList[random.randint(0, 4)]
+        if duration > 9:
+            f.write(str(duration))
+        else:
+            f.write('0' + str(duration))
 
-            workModes = ["1111100", "1111110", "1111111"]
-            f.write(workModes[random.randint(0,2)])
-            startEnd = ["0817", "0918", "0922"]
-            if duration == 24:
-                f.write("0024")
-            else:
-                f.write(startEnd[random.randint(0, 2)])
-            numSpots = random.randint(0, 100)
-            if numSpots > 999:
-                f.write(str(numSpots))
-            elif numSpots > 99:
-                f.write('0' + str(numSpots))
-            elif numSpots > 9:
-                f.write('00' + str(numSpots))
-            else:
-                f.write('000' + str(numSpots))
-            f.write('\n')
-        f.close()
+        workModes = ["1111100", "1111110", "1111111"]
+        f.write(workModes[random.randint(0,2)])
+        startEnd = ["0817", "0918", "0922"]
+        if duration == 24:
+            f.write("0024")
+        else:
+            f.write(startEnd[random.randint(0, 2)])
+        numSpots = random.randint(0, 100)
+        if numSpots > 999:
+            f.write(str(numSpots))
+        elif numSpots > 99:
+            f.write('0' + str(numSpots))
+        elif numSpots > 9:
+            f.write('00' + str(numSpots))
+        else:
+            f.write('000' + str(numSpots))
+        f.write('\n')
+    f.close()
 
 
