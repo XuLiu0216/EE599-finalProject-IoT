@@ -249,9 +249,10 @@ def bruteforce(U, P):
         u.opt = min_id
     return
 def bruteforce_c():
-	os.system('g++ bf.cpp')
-	os.system('./a.out')
-
+	#os.system('g++ bf.cpp')
+	#os.system('./a.out')
+	os.system('g++ -o run bf.cpp loc.cpp')
+	os.system('./run')
 # search for parking spots of the meters within destination
 def searchParkingWithin(destLoc, P, meters):
     res = {}
