@@ -13,6 +13,7 @@
 #include<map>
 #include "loc.h"
 #include<set>
+#include <deque> 
 using namespace std;
 class UserEntity;
 class ParkingEntities;
@@ -187,6 +188,7 @@ public:
 	double get_drive(){return drivetime;}
         void print_result(){
                 cout << "User id: " << get_id() <<", "<< "opt " << get_opt().get_id() << endl;
+                
         }
         friend class interaction;
 
@@ -262,7 +264,7 @@ void get_walking_time(){
 };
 
 
-void read_user_input(istream & infile){
+void read_user_input(istream & infile){//c++ reference
     
         string line;
         while(getline(infile,line)){
@@ -283,7 +285,7 @@ void read_user_input(istream & infile){
 		//U.insert(user);
            }
 }
-void read_parking_input(istream & infile){
+void read_parking_input(istream & infile){//c++ reference
     	string line;
         while(getline(infile,line)){
             int id = atoi((line.substr(0,4)).c_str());
@@ -382,14 +384,28 @@ void bruteforce(){
         U[i].opt = pmap.find(min_id)->second;
 }
 }
-	
+//Debugging
+void userFileName(){
+   cout << "inputUser.txt" << endl;
+}
+void parkingFileName(){
+   cout << "inputParking.txt" << endl;
+}
+void outputFileName(){
+   cout << "output.txt" << endl;
+}
 
 int main(){
+   //store filenames in dequeue
+   deque <string> fileNames;
+   fileNames.push_back("inputUser.txt"); 
+   fileNames.push_back("inputParking.txt"); 
+   fileNames.push_back("output.txt"); 
 	ifstream infile;
-	infile.open("inputUser.txt");
+	infile.open(fileNames.at(0).c_str());// Code cited https://stackoverflow.com/questions/6323619/c-ifstream-error-using-string-as-opening-file-path
 	read_user_input(infile);
 	infile.close();
-        infile.open("inputParking.txt");
+        infile.open(fileNames.at(1).c_str());// Code cited https://stackoverflow.com/questions/6323619/c-ifstream-error-using-string-as-opening-file-path
 	read_parking_input(infile);
         infile.close();
 	//loc location_cur =  loc(1,3);
@@ -419,11 +435,76 @@ cout << endl;
 bruteforce();
 //vector<ParkingEntities> res = searchParkingWithin(U[0].destLoc,P,2000);
 // set<ParkingEntities>::iterator it;
+
+//Make Array of Function Pointers for fun
+void (*functionPointer1)() = userFileName;
+void (*functionPointer2)() = parkingFileName;
+void (*functionPointer3)() = outputFileName;
+void (* functionPointerArray[3])() = {functionPointer1,functionPointer2,functionPointer3};
+//End of fun function pointer array- woohoo!
+
+
  for(int i = 0; i < U.size();i++){
 // for(it=U.begin();it!=U.end();it++){   
  //cout <<i<<"th user's opt: "<< U[i].opt << endl;
   U[i].print_result();
 }
 
+//Statistics
+
+//Longest 3, and shortest 3 walking times
+double walking[2][3];//Multi Dimensional Array
+  walking[0][0] = U[0].get_walk();//max
+  walking[0][1] = U[0].get_walk();//2nd max
+  walking[0][2] = U[0].get_walk();//3rd to max
+  walking[1][0] = U[0].get_walk();//min
+  walking[1][1] = U[0].get_walk();//2nd min
+  walking[1][2] = U[0].get_walk();//3rd to min
+for(int i = 0; i < U.size();i++){
+   //Max Three
+  if(U[i].get_walk() > walking[0][0]){
+   walking[0][2]=walking[0][1];
+   walking[0][1]=walking[0][0];
+   walking[0][0]=U[i].get_walk();
+   }
+  else if(U[i].get_walk() > walking[0][1]){
+   walking[0][2]=walking[0][1];
+   walking[0][1]=U[i].get_walk();
+  }
+  else if(U[i].get_walk() > walking[0][2]){
+   walking[0][2]=U[i].get_walk();
+  }
+   //Min Three
+   if(U[i].get_walk() < walking[1][0]){
+   walking[1][2]=walking[1][1];
+   walking[1][1]=walking[1][0];
+   walking[1][0]=U[i].get_walk();
+   }
+  else if(U[i].get_walk() < walking[1][1]){
+   walking[1][2]=walking[1][1];
+   walking[1][1]=U[i].get_walk();
+  }
+  else if(U[i].get_walk() < walking[1][2]){
+   walking[1][2]=U[i].get_walk();
+  } 
+}
+
+//Deep and Shallow Copy
+//https://www.quora.com/What-is-the-difference-between-shallow-copy-and-deep-copy-in-C++
+double* longest3 = new double[3];
+for(int i=0;i<3;i++){//Make original array of longest three walks
+   longest3[i] = walking[0][i];
+}
+double* ShallowCopy = new double[3];
+ShallowCopy = longest3;//Shallow Copy
+
+double* DeepCopy = new double[3];
+for(int i=0;i<3;i++){//Deep Copy
+   DeepCopy[i]=longest3[i];
+}
+//End of Deep and Shallow Copy tutorial
+
+//cout << "Longest Walk: " << walking[0][0] << endl;
+//cout << "Shortest Walk: " << walking[1][0] << endl;
 	return 0;
 }
