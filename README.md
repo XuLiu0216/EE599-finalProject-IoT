@@ -1,6 +1,6 @@
 # EE599-finalProject-IoT
 
-This project implements an IoT based framework to find a users parking, based on real time data, and users preferences.
+This project implements an IoT based framework to find a users parking, based on real time data from google maps API, users preferences, and the combination of walking and driving time.
 
 
 ### Prerequisites
